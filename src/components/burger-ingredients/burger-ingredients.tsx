@@ -7,7 +7,6 @@ import { TTabMode } from '@utils-types';
 import { BurgerIngredientsUI } from '../ui/burger-ingredients';
 
 export const BurgerIngredients: FC = () => {
-  /** TODO: взять переменные из стора */
   const buns = useSelector(selectIngredients).filter(
     (item) => item.type === 'bun'
   );

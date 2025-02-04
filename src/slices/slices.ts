@@ -73,14 +73,21 @@ const stellarBurgerslice = createSlice({
     closeModal(state) {
       state.isModalOpened = false;
     },
-    addIngredient(state, action: PayloadAction<TIngredient>) {
-      if (action.payload.type === 'bun') {
-        state.constructorItems.bun = action.payload;
-      } else {
-        state.constructorItems.ingredients.push({
-          ...action.payload,
-          id: uuidv4()
-        });
+    addIngredient: {
+      reducer(state, action: PayloadAction<TConstructorIngredient>) {
+        if (action.payload.type === 'bun') {
+          state.constructorItems.bun = action.payload;
+        } else {
+          state.constructorItems.ingredients.push(action.payload);
+        }
+      },
+      prepare(ingredient: TIngredient) {
+        return {
+          payload: {
+            ...ingredient,
+            id: uuidv4()
+          }
+        };
       }
     },
     deleteIngredient(state, action: PayloadAction<TConstructorIngredient>) {

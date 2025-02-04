@@ -4,15 +4,18 @@ import {
   fetchLoginUser,
   selectLoading,
   selectErrorText,
-  removeErrorText
+  removeErrorText,
+  getUserThunk
 } from '../../slices/slices';
 import { useDispatch, useSelector } from '../../services/store';
 import { useForm } from '../../utils/useForm';
 import { Preloader } from '@ui';
 import { setCookie } from '../../utils/cookie';
+import { useNavigate } from 'react-router-dom';
 
 export const Login: FC = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { values, handleChange } = useForm({
     email: '',
     password: ''
@@ -33,7 +36,8 @@ export const Login: FC = () => {
         .then((payload) => {
           localStorage.setItem('refreshToken', payload.refreshToken);
           setCookie('accessToken', payload.accessToken);
-          window.location.reload();
+          dispatch(getUserThunk());
+          navigate(-1);
         });
     } catch (error) {
       console.error('Login failed:', error);

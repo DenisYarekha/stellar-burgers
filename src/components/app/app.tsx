@@ -1,7 +1,7 @@
 import '../../index.css';
 import styles from './app.module.css';
 import { useEffect } from 'react';
-import { Route, Routes, useLocation } from 'react-router-dom';
+import { Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 
 import {
   ConstructorPage,
@@ -26,7 +26,8 @@ import {
   selectOrders,
   getUserThunk,
   selectIsAuthenticated,
-  fetchFeed
+  fetchFeed,
+  openModal
 } from '../../slices/slices';
 
 import { deleteCookie, getCookie } from '../../utils/cookie';
@@ -36,6 +37,7 @@ export const App = () => {
   const location = useLocation();
   const backgroundLocation = location.state?.background;
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const isModalOpened = useSelector(selectIsModalOpened);
   const token = getCookie('accessToken');
@@ -71,6 +73,21 @@ export const App = () => {
       dispatch(fetchFeed());
     }
   }, [dispatch, feed.length]);
+
+  useEffect(() => {
+    if (
+      location.pathname.startsWith('/ingredients/') ||
+      location.pathname.startsWith('/feed/') ||
+      location.pathname.startsWith('/profile/orders/')
+    ) {
+      dispatch(openModal());
+    }
+  }, [location.pathname, dispatch]);
+
+  const closeModalHandler = () => {
+    dispatch(closeModal());
+    navigate(backgroundLocation?.pathname || '/', { replace: true });
+  };
 
   return (
     <div className={styles.app}>
@@ -126,8 +143,16 @@ export const App = () => {
             </ProtectedRoute>
           }
         />
+        <Route path='/feed/:number' element={<OrderInfo />} />
+        <Route
+          path='/profile/orders/:number'
+          element={
+            <ProtectedRoute>
+              <OrderInfo />
+            </ProtectedRoute>
+          }
+        />
         <Route path='/ingredients/:id' element={<IngredientDetails />} />
-        <Route path='/profile/orders/:number' element={<OrderInfo />} />
         <Route path='*' element={<NotFound404 />} />
       </Routes>
 
@@ -137,12 +162,7 @@ export const App = () => {
           <Route
             path='/ingredients/:id'
             element={
-              <Modal
-                title={'Описание ингредиента'}
-                onClose={() => {
-                  dispatch(closeModal());
-                }}
-              >
+              <Modal title={'Описание ингредиента'} onClose={closeModalHandler}>
                 <IngredientDetails />
               </Modal>
             }
@@ -150,12 +170,7 @@ export const App = () => {
           <Route
             path='/feed/:number'
             element={
-              <Modal
-                title={'Заказ'}
-                onClose={() => {
-                  dispatch(closeModal());
-                }}
-              >
+              <Modal title={'Заказ'} onClose={closeModalHandler}>
                 <OrderInfo />
               </Modal>
             }
@@ -165,12 +180,7 @@ export const App = () => {
             path='/profile/orders/:number'
             element={
               <ProtectedRoute>
-                <Modal
-                  title={'Заказ'}
-                  onClose={() => {
-                    dispatch(closeModal());
-                  }}
-                >
+                <Modal title={'Заказ'} onClose={closeModalHandler}>
                   <OrderInfo />
                 </Modal>
               </ProtectedRoute>

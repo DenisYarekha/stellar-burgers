@@ -1,23 +1,29 @@
-import { FC, useEffect } from 'react';
+import { FC, useEffect, useState } from 'react';
 import { Preloader } from '../ui/preloader';
 import { IngredientDetailsUI } from '../ui/ingredient-details';
 
-import { useNavigate } from 'react-router-dom';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { selectIngredients } from '../../slices/slices';
 import { useSelector } from '../../services/store';
 
 export const IngredientDetails: FC = () => {
   const navigate = useNavigate();
   const params = useParams<{ id: string }>();
+  const ingredients = useSelector(selectIngredients);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (!params.id) {
-      navigate('/', { replace: true });
+    if (!ingredients.length) {
+      return;
     }
-  }, []);
+    const ingredientData = ingredients.find((item) => item._id === params.id);
+    if (!ingredientData) {
+      navigate('/', { replace: true });
+    } else {
+      setIsLoading(false);
+    }
+  }, [ingredients, params.id, navigate]);
 
-  const ingredients = useSelector(selectIngredients);
   const ingredientData = ingredients.find((item) => item._id === params.id);
 
   if (!ingredientData) {

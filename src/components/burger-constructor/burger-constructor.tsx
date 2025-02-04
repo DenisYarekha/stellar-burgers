@@ -1,6 +1,8 @@
-import { FC, useMemo } from 'react';
-import { TConstructorIngredient } from '@utils-types';
+import { FC, useEffect, useMemo } from 'react';
 import { BurgerConstructorUI } from '@ui';
+import { TIngredient } from '@utils-types';
+import { useNavigate } from 'react-router-dom';
+import { useSelector, useDispatch } from '../../services/store';
 
 import {
   selectOrderRequest,
@@ -8,12 +10,9 @@ import {
   selectOrderModalData,
   fetchNewOrder,
   closeOrderRequest,
-  selectIsAuthenticated
+  selectIsAuthenticated,
+  addIngredient
 } from '../../slices/slices';
-
-import { TIngredient } from '@utils-types';
-import { useNavigate } from 'react-router-dom';
-import { useSelector, useDispatch } from '../../services/store';
 
 export const BurgerConstructor: FC = () => {
   const dispatch = useDispatch();
@@ -22,10 +21,27 @@ export const BurgerConstructor: FC = () => {
   const orderRequest = useSelector(selectOrderRequest);
   const constructorItems = useSelector(selectConstructorItems);
   const orderModalData = useSelector(selectOrderModalData);
-  /** TODO: взять переменные constructorItems, orderRequest и orderModalData из стора */
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      const savedConstructorItems = localStorage.getItem('constructorItems');
+      if (savedConstructorItems) {
+        const parsedItems = JSON.parse(savedConstructorItems);
+        dispatch(addIngredient(parsedItems));
+        localStorage.removeItem('constructorItems');
+      }
+    }
+  }, [isAuthenticated, dispatch]);
 
   const onOrderClick = () => {
     if (!isAuthenticated) {
+      localStorage.setItem(
+        'constructorItems',
+        JSON.stringify({
+          bun: constructorItems.bun,
+          ingredients: constructorItems.ingredients
+        })
+      );
       return navigate('/login', { replace: true });
     }
 
@@ -42,6 +58,7 @@ export const BurgerConstructor: FC = () => {
       );
     }
   };
+
   const closeOrderModal = () => {
     dispatch(closeOrderRequest());
   };

@@ -2,7 +2,6 @@ import { ProfileOrdersUI } from '@ui-pages';
 import { TOrder } from '@utils-types';
 import { FC, useEffect } from 'react';
 import {
-  fetchIngredients,
   fetchUserOrders,
   removeUserOrders,
   selectUserOrders
@@ -15,7 +14,7 @@ export const ProfileOrders: FC = () => {
 
   useEffect(() => {
     dispatch(removeUserOrders());
-    Promise.all([dispatch(fetchIngredients()), dispatch(fetchUserOrders())]);
+    Promise.all([dispatch(fetchUserOrders())]);
   }, [dispatch]);
 
   const orders: TOrder[] | null = useSelector(selectUserOrders);
