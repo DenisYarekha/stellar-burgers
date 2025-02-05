@@ -1,36 +1,93 @@
-import { FC, useMemo } from 'react';
-import { TConstructorIngredient } from '@utils-types';
+import { FC, useEffect, useMemo } from 'react';
 import { BurgerConstructorUI } from '@ui';
+import { TConstructorIngredient, TIngredient } from '@utils-types';
+import { useNavigate } from 'react-router-dom';
+import { useSelector, useDispatch } from '../../services/store';
+
+import {
+  selectOrderRequest,
+  selectConstructorItems,
+  selectOrderModalData,
+  fetchNewOrder,
+  closeOrderRequest,
+  selectIsAuthenticated,
+  addIngredient
+} from '../../slices/slices';
 
 export const BurgerConstructor: FC = () => {
-  /** TODO: взять переменные constructorItems, orderRequest и orderModalData из стора */
-  const constructorItems = {
-    bun: {
-      price: 0
-    },
-    ingredients: []
-  };
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const isAuthenticated = useSelector(selectIsAuthenticated);
+  const orderRequest = useSelector(selectOrderRequest);
+  const constructorItems = useSelector(selectConstructorItems);
+  const orderModalData = useSelector(selectOrderModalData);
 
-  const orderRequest = false;
+  useEffect(() => {
+    if (isAuthenticated) {
+      const savedConstructorItems = localStorage.getItem('constructorItems');
+      if (savedConstructorItems) {
+        const { bun, ingredients } = JSON.parse(savedConstructorItems);
 
-  const orderModalData = null;
+        if (bun && !constructorItems.bun) {
+          dispatch(addIngredient(bun));
+        }
+        if (ingredients?.length) {
+          const existingIds = new Set(
+            constructorItems.ingredients.map((item) => item._id)
+          );
+          ingredients.forEach((ingredient: TConstructorIngredient) => {
+            if (!existingIds.has(ingredient._id)) {
+              dispatch(addIngredient(ingredient));
+            }
+          });
+        }
+
+        localStorage.removeItem('constructorItems');
+      }
+    }
+  }, [isAuthenticated, dispatch]);
 
   const onOrderClick = () => {
-    if (!constructorItems.bun || orderRequest) return;
+    if (!isAuthenticated) {
+      localStorage.setItem(
+        'constructorItems',
+        JSON.stringify({
+          bun: constructorItems.bun?._id ? constructorItems.bun : null,
+          ingredients: constructorItems.ingredients.length
+            ? constructorItems.ingredients
+            : []
+        })
+      );
+      return navigate('/login', { replace: true });
+    }
+
+    if (constructorItems.bun._id && constructorItems.ingredients.length) {
+      const ingredientsIds = constructorItems.ingredients.map(
+        (item) => item._id
+      );
+      dispatch(
+        fetchNewOrder([
+          constructorItems.bun._id,
+          ...ingredientsIds,
+          constructorItems.bun._id
+        ])
+      );
+    }
   };
-  const closeOrderModal = () => {};
+
+  const closeOrderModal = () => {
+    dispatch(closeOrderRequest());
+  };
 
   const price = useMemo(
     () =>
-      (constructorItems.bun ? constructorItems.bun.price * 2 : 0) +
+      (constructorItems.bun ? constructorItems.bun.price! * 2 : 0) +
       constructorItems.ingredients.reduce(
-        (s: number, v: TConstructorIngredient) => s + v.price,
+        (s: number, v: TIngredient) => s + v.price,
         0
       ),
     [constructorItems]
   );
-
-  return null;
 
   return (
     <BurgerConstructorUI
