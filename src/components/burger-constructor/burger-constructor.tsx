@@ -1,6 +1,6 @@
 import { FC, useEffect, useMemo } from 'react';
 import { BurgerConstructorUI } from '@ui';
-import { TIngredient } from '@utils-types';
+import { TConstructorIngredient, TIngredient } from '@utils-types';
 import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from '../../services/store';
 
@@ -26,8 +26,22 @@ export const BurgerConstructor: FC = () => {
     if (isAuthenticated) {
       const savedConstructorItems = localStorage.getItem('constructorItems');
       if (savedConstructorItems) {
-        const parsedItems = JSON.parse(savedConstructorItems);
-        dispatch(addIngredient(parsedItems));
+        const { bun, ingredients } = JSON.parse(savedConstructorItems);
+
+        if (bun && !constructorItems.bun) {
+          dispatch(addIngredient(bun));
+        }
+        if (ingredients?.length) {
+          const existingIds = new Set(
+            constructorItems.ingredients.map((item) => item._id)
+          );
+          ingredients.forEach((ingredient: TConstructorIngredient) => {
+            if (!existingIds.has(ingredient._id)) {
+              dispatch(addIngredient(ingredient));
+            }
+          });
+        }
+
         localStorage.removeItem('constructorItems');
       }
     }
@@ -38,8 +52,10 @@ export const BurgerConstructor: FC = () => {
       localStorage.setItem(
         'constructorItems',
         JSON.stringify({
-          bun: constructorItems.bun,
-          ingredients: constructorItems.ingredients
+          bun: constructorItems.bun?._id ? constructorItems.bun : null,
+          ingredients: constructorItems.ingredients.length
+            ? constructorItems.ingredients
+            : []
         })
       );
       return navigate('/login', { replace: true });

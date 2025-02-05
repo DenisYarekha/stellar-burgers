@@ -26,7 +26,6 @@ import {
   selectOrders,
   getUserThunk,
   selectIsAuthenticated,
-  fetchFeed,
   openModal
 } from '../../slices/slices';
 
@@ -47,7 +46,6 @@ export const App = () => {
 
   useEffect(() => {
     if (!isAuthenticated && token) {
-      console.log('Fetching user...');
       dispatch(getUserThunk())
         .unwrap()
         .then(() => {
@@ -67,12 +65,6 @@ export const App = () => {
       dispatch(fetchIngredients());
     }
   }, [dispatch, ingredients.length]);
-
-  useEffect(() => {
-    if (!feed.length) {
-      dispatch(fetchFeed());
-    }
-  }, [dispatch, feed.length]);
 
   useEffect(() => {
     if (
