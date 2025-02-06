@@ -14,7 +14,7 @@ export const ProfileOrders: FC = () => {
 
   useEffect(() => {
     dispatch(removeUserOrders());
-    Promise.all([dispatch(fetchUserOrders())]);
+    dispatch(fetchUserOrders());
   }, [dispatch]);
 
   const orders: TOrder[] | null = useSelector(selectUserOrders);

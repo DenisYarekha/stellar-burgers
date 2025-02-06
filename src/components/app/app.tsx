@@ -64,7 +64,7 @@ export const App = () => {
     if (!ingredients.length) {
       dispatch(fetchIngredients());
     }
-  }, [dispatch, ingredients.length]);
+  }, [dispatch, ingredients]);
 
   useEffect(() => {
     if (

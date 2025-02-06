@@ -2,14 +2,19 @@ import { FC, useEffect, useMemo, useState } from 'react';
 import { Preloader } from '../ui/preloader';
 import { OrderInfoUI } from '../ui/order-info';
 import { TIngredient } from '@utils-types';
+import { fetchFeed, fetchUserOrders } from '../../slices/slices';
 import {
   useParams,
   redirect,
   useNavigate,
   useLocation
 } from 'react-router-dom';
-import { useSelector } from '../../services/store';
-import { selectOrders, selectIngredients } from '../../slices/slices';
+import { useDispatch, useSelector } from '../../services/store';
+import {
+  selectOrders,
+  selectIngredients,
+  selectUserOrders
+} from '../../slices/slices';
 
 export const OrderInfo: FC = () => {
   const params = useParams<{ number: string }>();
@@ -18,6 +23,20 @@ export const OrderInfo: FC = () => {
   const ingredients: TIngredient[] = useSelector(selectIngredients);
   const location = useLocation();
   const isModal = location.state?.background;
+  const dispatch = useDispatch();
+  const userOrders = useSelector(selectUserOrders);
+
+  useEffect(() => {
+    if (!userOrders) {
+      dispatch(fetchUserOrders());
+    }
+  }, [userOrders, dispatch]);
+
+  useEffect(() => {
+    if (!orders.length) {
+      dispatch(fetchFeed());
+    }
+  }, [orders, dispatch]);
 
   useEffect(() => {
     if (!params.number) {
@@ -26,9 +45,13 @@ export const OrderInfo: FC = () => {
   }, [params.number, navigate]);
 
   const orderData = useMemo(() => {
-    if (!orders.length) return null;
-    return orders.find((item) => item.number === parseInt(params.number!));
-  }, [orders, params.number]);
+    const allOrders = location.pathname.startsWith('/profile/orders')
+      ? userOrders
+      : orders;
+
+    if (!allOrders?.length) return null;
+    return allOrders.find((item) => item.number === parseInt(params.number!));
+  }, [orders, userOrders, params.number, location.pathname]);
 
   const orderInfo = useMemo(() => {
     if (!orderData || !ingredients.length) return null;
