@@ -1,0 +1,11 @@
+{
+    "success": true,
+    "user": {
+      "email": "TESTUSER1@mail.ru",
+      "name": "TESTUSER1",
+      "password": "qwe123"
+    },
+    "accessToken": "mock-access-token",
+    "refreshToken": "mock-refresh-token"
+  }
+  

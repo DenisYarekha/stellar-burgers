@@ -1,0 +1,17 @@
+{
+  "success": true,
+  "name": "Тестовый заказ",
+  "order": {
+    "_id": "01",
+    "ingredients": [
+      "643d69a5c3f7b9001cfa093c",
+      "643d69a5c3f7b9001cfa0941",
+      "643d69a5c3f7b9001cfa093c"
+    ],
+    "status": "done",
+    "name": "Тестовый заказ",
+    "createdAt": "2025-02-12T00:00:00.000Z",
+    "updatedAt": "2025-02-13T00:00:00.000Z",
+    "number": 12345
+  }
+}

@@ -11,7 +11,8 @@ import {
   fetchNewOrder,
   closeOrderRequest,
   selectIsAuthenticated,
-  addIngredient
+  addIngredient,
+  clearConstructor
 } from '../../slices/slices';
 
 export const BurgerConstructor: FC = () => {
@@ -71,7 +72,9 @@ export const BurgerConstructor: FC = () => {
           ...ingredientsIds,
           constructorItems.bun._id
         ])
-      );
+      ).then(() => {
+        dispatch(clearConstructor());
+      });
     }
   };
 
