@@ -35,3 +35,18 @@
 //     }
 //   }
 // }
+
+Cypress.Commands.add('clickIngredient', (name: string) => {
+  cy.contains('[data-test="ingredient"]', name).click();
+});
+
+Cypress.Commands.add('closeModal', () => {
+  cy.get('[data-test="close-button"]').click();
+  cy.get('[data-test="modal"]').should('not.exist');
+});
+
+Cypress.Commands.add('addIngredient', (name: string) => {
+  cy.contains('[data-test="ingredient"]', name).within(() => {
+    cy.get('button').contains('Добавить').click();
+  });
+});

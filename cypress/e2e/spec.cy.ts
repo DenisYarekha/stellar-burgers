@@ -1,3 +1,15 @@
+// Константы для селекторов
+const selectors = {
+  ingredient: '[data-test="ingredient"]',
+  modal: '[data-test="modal"]',
+  modalCloseButton: '[data-test="close-button"]',
+  modalOverlay: '[data-test="modal-overlay"]',
+  orderButton: 'Оформить заказ',
+  orderNumber: '[data-test="order-number"]',
+  ingredientList: '[data-test="ingredient-list"]',
+  bun: '[data-test="bun"]'
+};
+
 describe('Тесты cypress', () => {
   beforeEach(() => {
     // Перехваты запросов на получение данных
@@ -21,22 +33,27 @@ describe('Тесты cypress', () => {
 
   describe('Модальные окна', () => {
     it('Открытие модального окна при клике на ингредиент', () => {
-      cy.get('[data-test="ingredient"]').first().click();
-      cy.get('[data-test="modal"]').should('exist').and('be.visible');
+      cy.wait('@getIngredients');
+      cy.clickIngredient('Соус Spicy-X');
+      cy.get(selectors.modal).should('exist').and('be.visible');
+      cy.get(selectors.modal).within(() => {
+        cy.contains('Соус Spicy-X').should('exist');
+      });
     });
 
     it('Закрытие модального окна по клику на крестик', () => {
-      cy.get('[data-test="ingredient"]').first().click();
-      cy.get('[data-test="modal"]').should('exist');
-      cy.get('[data-test="close-button"]').click();
-      cy.get('[data-test="modal"]').should('not.exist');
+      cy.wait('@getIngredients');
+      cy.clickIngredient('Краторная булка N-200i');
+      cy.get(selectors.modal).should('exist');
+      cy.closeModal();
     });
 
     it('Закрытие модального окна по клику на оверлей', () => {
-      cy.get('[data-test="ingredient"]').first().click();
-      cy.get('[data-test="modal"]').should('exist');
-      cy.get('[data-test="modal-overlay"]').click({ force: true });
-      cy.get('[data-test="modal"]').should('not.exist');
+      cy.wait('@getIngredients');
+      cy.clickIngredient('Биокотлета из марсианской Магнолии');
+      cy.get(selectors.modal).should('exist');
+      cy.get(selectors.modalOverlay).click({ force: true });
+      cy.get(selectors.modal).should('not.exist');
     });
   });
 
@@ -45,28 +62,21 @@ describe('Тесты cypress', () => {
       cy.wait('@getUser');
       cy.wait('@getIngredients');
 
-      cy.contains('[data-test="ingredient"]', 'булка').within(() => {
-        cy.get('button').contains('Добавить').click();
-      });
-      cy.contains('[data-test="ingredient"]', 'котлета').within(() => {
-        cy.get('button').contains('Добавить').click();
-      });
-      cy.contains('[data-test="ingredient"]', 'Соус').within(() => {
-        cy.get('button').contains('Добавить').click();
-      });
+      cy.addIngredient('Краторная булка N-200i');
+      cy.addIngredient('Биокотлета из марсианской Магнолии');
+      cy.addIngredient('Соус Spicy-X');
 
-      cy.contains('Оформить заказ').click();
+      cy.get(selectors.bun).should('exist');
+      cy.get(selectors.ingredientList).find('li').should('have.length', 2);
 
-      cy.get('[data-test="modal"]').should('exist');
-      cy.get('[data-test="order-number"]').should('have.text', '12345');
+      cy.contains(selectors.orderButton).click();
+      cy.get(selectors.modal).should('exist');
+      cy.get(selectors.orderNumber).should('have.text', '12345');
 
-      cy.get('[data-test="close-button"]').click();
-      cy.get('[data-test="modal"]').should('not.exist');
+      cy.closeModal();
 
-      cy.get('[data-test="bun"]').should('not.exist');
-      cy.get('[data-test="ingredient-list"]')
-        .find('li')
-        .should('have.length', 0);
+      cy.get(selectors.bun).should('not.exist');
+      cy.get(selectors.ingredientList).find('li').should('have.length', 0);
     });
   });
 });
