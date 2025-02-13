@@ -139,6 +139,12 @@ const stellarBurgerslice = createSlice({
     },
     removeErrorText(state) {
       state.errorText = '';
+    },
+    clearConstructor(state) {
+      state.constructorItems = {
+        bun: { price: 0 },
+        ingredients: []
+      };
     }
   },
   selectors: {
@@ -189,6 +195,7 @@ const stellarBurgerslice = createSlice({
       .addCase(fetchLoginUser.fulfilled, (state, action) => {
         state.loading = false;
         state.isAuthenticated = true;
+        state.user = action.payload.user;
       })
       .addCase(fetchRegisterUser.pending, (state) => {
         state.loading = true;
@@ -200,6 +207,7 @@ const stellarBurgerslice = createSlice({
       .addCase(fetchRegisterUser.fulfilled, (state, action) => {
         state.loading = false;
         state.isAuthenticated = true;
+        state.user = action.payload.user;
       })
       .addCase(getUserThunk.pending, (state) => {
         state.loading = true;
@@ -397,7 +405,8 @@ export const {
   removeErrorText,
   moveIngredientUp,
   moveIngredientDown,
-  closeOrderRequest
+  closeOrderRequest,
+  clearConstructor
 } = stellarBurgerslice.actions;
 
 export default stellarBurgerslice.reducer;
