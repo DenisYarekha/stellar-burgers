@@ -1,28 +1,62 @@
-import { FC, useMemo } from 'react';
+import { FC, useEffect, useMemo, useState } from 'react';
 import { Preloader } from '../ui/preloader';
 import { OrderInfoUI } from '../ui/order-info';
 import { TIngredient } from '@utils-types';
+import { fetchFeed, fetchUserOrders } from '../../slices/slices';
+import {
+  useParams,
+  redirect,
+  useNavigate,
+  useLocation
+} from 'react-router-dom';
+import { useDispatch, useSelector } from '../../services/store';
+import {
+  selectOrders,
+  selectIngredients,
+  selectUserOrders
+} from '../../slices/slices';
 
 export const OrderInfo: FC = () => {
-  /** TODO: взять переменные orderData и ingredients из стора */
-  const orderData = {
-    createdAt: '',
-    ingredients: [],
-    _id: '',
-    status: '',
-    name: '',
-    updatedAt: 'string',
-    number: 0
-  };
+  const params = useParams<{ number: string }>();
+  const orders = useSelector(selectOrders);
+  const navigate = useNavigate();
+  const ingredients: TIngredient[] = useSelector(selectIngredients);
+  const location = useLocation();
+  const isModal = location.state?.background;
+  const dispatch = useDispatch();
+  const userOrders = useSelector(selectUserOrders);
 
-  const ingredients: TIngredient[] = [];
+  useEffect(() => {
+    if (!userOrders) {
+      dispatch(fetchUserOrders());
+    }
+  }, [userOrders, dispatch]);
 
-  /* Готовим данные для отображения */
+  useEffect(() => {
+    if (!orders.length) {
+      dispatch(fetchFeed());
+    }
+  }, [orders, dispatch]);
+
+  useEffect(() => {
+    if (!params.number) {
+      navigate('/feed', { replace: true });
+    }
+  }, [params.number, navigate]);
+
+  const orderData = useMemo(() => {
+    const allOrders = location.pathname.startsWith('/profile/orders')
+      ? userOrders
+      : orders;
+
+    if (!allOrders?.length) return null;
+    return allOrders.find((item) => item.number === parseInt(params.number!));
+  }, [orders, userOrders, params.number, location.pathname]);
+
   const orderInfo = useMemo(() => {
     if (!orderData || !ingredients.length) return null;
 
     const date = new Date(orderData.createdAt);
-
     type TIngredientsWithCount = {
       [key: string]: TIngredient & { count: number };
     };
@@ -61,6 +95,10 @@ export const OrderInfo: FC = () => {
 
   if (!orderInfo) {
     return <Preloader />;
+  }
+
+  if (isModal) {
+    return <OrderInfoUI orderInfo={orderInfo} />;
   }
 
   return <OrderInfoUI orderInfo={orderInfo} />;
